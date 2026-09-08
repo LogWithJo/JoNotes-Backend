@@ -8,7 +8,7 @@ export async function createNote(req: AuthRequest, res: Response) {
 	const { title, category, content } = req.body;
 	const userId = req.userId;
 
-	if (!userId) {
+	if (userId === undefined) {
 		return res.status(401).json({ error: "Unauthorized" });
 	}
 
@@ -32,7 +32,7 @@ export async function getNotes(req: AuthRequest, res: Response) {
 	const { category, search, sort, id } = req.query;
 	const userId = req.userId;
 
-	if (!userId) {
+	if (userId === undefined) {
 		return res.status(401).json({ error: "Unauthorized" });
 	}
 
@@ -81,7 +81,7 @@ export async function getNoteById(req: AuthRequest, res: Response) {
 	const id = Number(req.params.id);
 	const userId = req.userId;
 
-	if (!userId) {
+	if (userId === undefined) {
 		return res.status(401).json({ error: "Unauthorized" });
 	}
 
@@ -103,7 +103,7 @@ export async function updateNote(req: AuthRequest, res: Response) {
 	const userId = req.userId;
 	const { title, content, category } = req.body;
 
-	if (!userId) {
+	if (userId === undefined) {
 		return res.status(401).json({ error: "Unauthorized" });
 	}
 
@@ -133,7 +133,7 @@ export async function deleteNote(req: AuthRequest, res: Response) {
 	const id = Number.isNaN(idFromParams) ? idFromQuery : idFromParams;
 	const userId = req.userId;
 
-	if (!userId) {
+	if (userId === undefined) {
 		return res.status(401).json({ error: "Unauthorized" });
 	}
 
@@ -158,7 +158,7 @@ export async function togglePin(req: AuthRequest, res: Response) {
 	const id = Number(req.params.id);
 	const userId = req.userId;
 
-	if (!userId) {
+	if (userId === undefined) {
 		return res.status(401).json({ error: "Unauthorized" });
 	}
 

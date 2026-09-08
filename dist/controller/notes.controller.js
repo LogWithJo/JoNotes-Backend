@@ -3,7 +3,7 @@ const prisma = new PrismaClient();
 export async function createNote(req, res) {
     const { title, category, content } = req.body;
     const userId = req.userId;
-    if (!userId) {
+    if (userId === undefined) {
         return res.status(401).json({ error: "Unauthorized" });
     }
     if (!title || !category) {
@@ -22,7 +22,7 @@ export async function createNote(req, res) {
 export async function getNotes(req, res) {
     const { category, search, sort, id } = req.query;
     const userId = req.userId;
-    if (!userId) {
+    if (userId === undefined) {
         return res.status(401).json({ error: "Unauthorized" });
     }
     if (id !== undefined) {
@@ -61,7 +61,7 @@ export async function getNotes(req, res) {
 export async function getNoteById(req, res) {
     const id = Number(req.params.id);
     const userId = req.userId;
-    if (!userId) {
+    if (userId === undefined) {
         return res.status(401).json({ error: "Unauthorized" });
     }
     const note = await prisma.note.findFirst({
@@ -78,7 +78,7 @@ export async function updateNote(req, res) {
     const id = Number.isNaN(idFromParams) ? idFromQuery : idFromParams;
     const userId = req.userId;
     const { title, content, category } = req.body;
-    if (!userId) {
+    if (userId === undefined) {
         return res.status(401).json({ error: "Unauthorized" });
     }
     if (Number.isNaN(id)) {
@@ -101,7 +101,7 @@ export async function deleteNote(req, res) {
     const idFromQuery = Number(req.query.id);
     const id = Number.isNaN(idFromParams) ? idFromQuery : idFromParams;
     const userId = req.userId;
-    if (!userId) {
+    if (userId === undefined) {
         return res.status(401).json({ error: "Unauthorized" });
     }
     if (Number.isNaN(id)) {
@@ -119,7 +119,7 @@ export async function deleteNote(req, res) {
 export async function togglePin(req, res) {
     const id = Number(req.params.id);
     const userId = req.userId;
-    if (!userId) {
+    if (userId === undefined) {
         return res.status(401).json({ error: "Unauthorized" });
     }
     const existingNote = await prisma.note.findFirst({
