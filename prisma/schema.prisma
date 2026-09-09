@@ -15,13 +15,26 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String?              // now optional — OAuth-only users won't have one
+  name      String?              // populated from OAuth profile if available
+  avatar    String?              // profile picture URL from Google/GitHub
+  createdAt DateTime  @default(now())
   notes     Note[]
+  accounts  Account[]            // one user, many linked login methods
 }
 
+model Account {
+  id                Int      @id @default(autoincrement())
+  provider          String   // "google" | "github"
+  providerAccountId String   // the unique id Google/GitHub gives that user ("sub" / "id")
+  userId            Int
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt         DateTime @default(now())
+
+  @@unique([provider, providerAccountId])
+}
 model Note {
   id        Int      @id @default(autoincrement())
   title     String
