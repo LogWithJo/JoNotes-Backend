@@ -42,6 +42,7 @@ export declare const AnyNull: {
 };
 export declare const ModelName: {
     readonly User: "User";
+    readonly Account: "Account";
     readonly Note: "Note";
 };
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
@@ -56,9 +57,19 @@ export declare const UserScalarFieldEnum: {
     readonly id: "id";
     readonly email: "email";
     readonly password: "password";
+    readonly name: "name";
+    readonly avatar: "avatar";
     readonly createdAt: "createdAt";
 };
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum];
+export declare const AccountScalarFieldEnum: {
+    readonly id: "id";
+    readonly provider: "provider";
+    readonly providerAccountId: "providerAccountId";
+    readonly userId: "userId";
+    readonly createdAt: "createdAt";
+};
+export type AccountScalarFieldEnum = (typeof AccountScalarFieldEnum)[keyof typeof AccountScalarFieldEnum];
 export declare const NoteScalarFieldEnum: {
     readonly id: "id";
     readonly title: "title";
@@ -80,4 +91,9 @@ export declare const QueryMode: {
     readonly insensitive: "insensitive";
 };
 export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode];
+export declare const NullsOrder: {
+    readonly first: "first";
+    readonly last: "last";
+};
+export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder];
 //# sourceMappingURL=prismaNamespaceBrowser.d.ts.map

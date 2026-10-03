@@ -40,6 +40,7 @@ export const JsonNull = runtime.objectEnumValues.instances.JsonNull;
 export const AnyNull = runtime.objectEnumValues.instances.AnyNull;
 export const ModelName = {
     User: 'User',
+    Account: 'Account',
     Note: 'Note'
 };
 /*
@@ -55,6 +56,15 @@ export const UserScalarFieldEnum = {
     id: 'id',
     email: 'email',
     password: 'password',
+    name: 'name',
+    avatar: 'avatar',
+    createdAt: 'createdAt'
+};
+export const AccountScalarFieldEnum = {
+    id: 'id',
+    provider: 'provider',
+    providerAccountId: 'providerAccountId',
+    userId: 'userId',
     createdAt: 'createdAt'
 };
 export const NoteScalarFieldEnum = {
@@ -74,5 +84,9 @@ export const SortOrder = {
 export const QueryMode = {
     default: 'default',
     insensitive: 'insensitive'
+};
+export const NullsOrder = {
+    first: 'first',
+    last: 'last'
 };
 //# sourceMappingURL=prismaNamespaceBrowser.js.map

@@ -123,6 +123,17 @@ export interface PrismaClient<in LogOpts extends Prisma.LogLevel = never, in out
         omit: OmitOpts;
     }>;
     /**
+     * `prisma.account`: Exposes CRUD operations for the **Account** model.
+      * Example usage:
+      * ```ts
+      * // Fetch zero or more Accounts
+      * const accounts = await prisma.account.findMany()
+      * ```
+      */
+    get account(): Prisma.AccountDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
+    /**
      * `prisma.note`: Exposes CRUD operations for the **Note** model.
       * Example usage:
       * ```ts
