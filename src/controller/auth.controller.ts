@@ -335,11 +335,9 @@ export async function getMe(req: AuthRequest, res: Response) {
 }
 
 export async function refresh(req: Request, res: Response) {
+	const cookieToken = req.cookies?.refreshToken;
 	const rawToken =
-		req.cookies?.refreshToken ||
-		(typeof req.body?.refreshToken === "string"
-			? req.body.refreshToken.trim()
-			: null);
+		typeof cookieToken === "string" ? cookieToken.trim() : "";
 
 	if (!rawToken) {
 		return res.status(400).json({ error: "Refresh token is required" });

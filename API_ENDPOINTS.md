@@ -136,13 +136,7 @@ Issues a new access token and rotates the refresh token.
 
 **Request**
 
-- Reads `refreshToken` from cookie or from JSON body:
-
-```json
-{
-  "refreshToken": "jwt_refresh_token_here"
-}
-```
+- No request body. Reads the previous `refreshToken` from the `refreshToken` HTTP-only cookie.
 
 **Success response**
 

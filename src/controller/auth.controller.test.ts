@@ -171,8 +171,18 @@ test("Authentication and Refresh Token Integration Suite", async (t) => {
 	await t.test("POST /auth/refresh fails when refresh token is missing", async () => {
 		const res = await fetch(`${baseUrl}/auth/refresh`, {
 			method: "POST",
+		});
+
+		assert.equal(res.status, 400);
+		const data = (await res.json()) as Record<string, unknown>;
+		assert.equal(data.error, "Refresh token is required");
+	});
+
+	await t.test("POST /auth/refresh ignores token in request body", async () => {
+		const res = await fetch(`${baseUrl}/auth/refresh`, {
+			method: "POST",
 			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({}),
+			body: JSON.stringify({ refreshToken: currentRefreshToken }),
 		});
 
 		assert.equal(res.status, 400);
@@ -183,8 +193,9 @@ test("Authentication and Refresh Token Integration Suite", async (t) => {
 	await t.test("POST /auth/refresh fails with invalid refresh token", async () => {
 		const res = await fetch(`${baseUrl}/auth/refresh`, {
 			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ refreshToken: "invalid-token" }),
+			headers: {
+				Cookie: "refreshToken=invalid-token",
+			},
 		});
 
 		assert.equal(res.status, 401);
@@ -194,8 +205,9 @@ test("Authentication and Refresh Token Integration Suite", async (t) => {
 	await t.test("POST /auth/refresh rotates token and issues new access token", async () => {
 		const res = await fetch(`${baseUrl}/auth/refresh`, {
 			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ refreshToken: currentRefreshToken }),
+			headers: {
+				Cookie: `refreshToken=${currentRefreshToken}`,
+			},
 		});
 
 		assert.equal(res.status, 200);
@@ -218,8 +230,9 @@ test("Authentication and Refresh Token Integration Suite", async (t) => {
 	await t.test("Using rotated (old) refresh token fails due to revocation", async () => {
 		const res = await fetch(`${baseUrl}/auth/refresh`, {
 			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ refreshToken: currentRefreshToken }),
+			headers: {
+				Cookie: `refreshToken=${currentRefreshToken}`,
+			},
 		});
 
 		assert.equal(res.status, 401);
@@ -255,8 +268,9 @@ test("Authentication and Refresh Token Integration Suite", async (t) => {
 		// Now refreshing with that token must fail
 		const refreshRes = await fetch(`${baseUrl}/auth/refresh`, {
 			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ refreshToken: rotatedRefreshToken }),
+			headers: {
+				Cookie: `refreshToken=${rotatedRefreshToken}`,
+			},
 		});
 
 		assert.equal(refreshRes.status, 401);
@@ -290,8 +304,9 @@ test("Authentication and Refresh Token Integration Suite", async (t) => {
 		// Verify token is revoked
 		const refreshRes = await fetch(`${baseUrl}/auth/refresh`, {
 			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ refreshToken: logoutToken }),
+			headers: {
+				Cookie: `refreshToken=${logoutToken}`,
+			},
 		});
 
 		assert.equal(refreshRes.status, 401);
