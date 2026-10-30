@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import type { Request, Response } from "express";
 import jwt from "jsonwebtoken";
+import { runtimeConfig } from "../config/runtime.js";
 import { PrismaClient } from "../generated/prisma/client.js";
 
 const prisma = new PrismaClient();
@@ -25,8 +26,8 @@ function validateEmailAndPassword(email: string, password: unknown) {
 	return null;
 }
 
-function getCookieOptions() {
-	const isProduction = process.env.NODE_ENV === "production";
+export function getCookieOptions() {
+	const isProduction = runtimeConfig.nodeEnv === "production";
 
 	return {
 		httpOnly: true,
@@ -51,7 +52,7 @@ function clearAuthCookie(res: Response) {
 	});
 }
 
-function issueTokenAndRespond(
+export function issueTokenAndRespond(
 	res: Response,
 	user: {
 		id: number;
@@ -61,7 +62,7 @@ function issueTokenAndRespond(
 	},
 	statusCode: number,
 ) {
-	const jwtSecret = process.env.JWT_SECRET;
+	const jwtSecret = runtimeConfig.jwtSecret;
 	if (!jwtSecret) {
 		console.error("JWT_SECRET is not defined in the environment");
 		return res

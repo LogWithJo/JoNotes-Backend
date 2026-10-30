@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
+import { runtimeConfig } from "../config/runtime.js";
 import { PrismaClient } from "../generated/prisma/client.js";
 
 const prisma = new PrismaClient();
@@ -31,7 +32,7 @@ export async function requireAuth(
 		return res.status(401).json({ error: "Missing or invalid session token" });
 	}
 
-	const jwtSecret = process.env.JWT_SECRET;
+	const jwtSecret = runtimeConfig.jwtSecret;
 	if (!jwtSecret) {
 		console.error("JWT_SECRET is not defined in the environment");
 		return res

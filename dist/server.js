@@ -2,27 +2,18 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import "dotenv/config";
 import express from "express";
+import { fileURLToPath } from "node:url";
+import { runtimeConfig } from "./config/runtime.js";
 import authRoutes from "./routes/auth.routes.js";
 import notesRoutes from "./routes/notes.routes.js";
 const app = express();
-const PORT = Number(process.env.PORT || 3000);
-const NODE_ENV = process.env.NODE_ENV || "development";
-const FRONTEND_URL = process.env.FRONTEND_URL;
-if (NODE_ENV === "production" && !FRONTEND_URL) {
-    throw new Error("FRONTEND_URL is required in production");
-}
-if (!process.env.JWT_SECRET) {
-    throw new Error("JWT_SECRET is required");
-}
-const allowedOrigins = FRONTEND_URL
-    ? FRONTEND_URL.split(",").map((origin) => origin.trim())
-    : [];
+app.set("trust proxy", 1);
 app.use(cors({
     origin: (origin, callback) => {
         if (!origin) {
             return callback(null, true);
         }
-        if (allowedOrigins.includes(origin)) {
+        if (runtimeConfig.allowedOrigins.includes(origin)) {
             return callback(null, true);
         }
         return callback(new Error("Not allowed by CORS"));
@@ -35,10 +26,21 @@ app.use(express.json());
 app.use(cookieParser());
 app.use("/auth", authRoutes);
 app.use("/notes", notesRoutes);
-app.get("/", (req, res) => {
+app.get("/", (_req, res) => {
     res.status(200).json({ message: "Server is alive!" });
 });
-app.listen(Number(PORT), "0.0.0.0", () => {
-    console.log(`Server running on port ${PORT}`);
+app.get("/health", (_req, res) => {
+    res.status(200).json({ ok: true, environment: runtimeConfig.nodeEnv });
 });
+export function startServer() {
+    return app.listen(runtimeConfig.port, "0.0.0.0", () => {
+        console.log(`Server running on port ${runtimeConfig.port}`);
+    });
+}
+export { app };
+const isDirectRun = process.argv[1] !== undefined &&
+    fileURLToPath(import.meta.url) === process.argv[1];
+if (isDirectRun) {
+    startServer();
+}
 //# sourceMappingURL=server.js.map

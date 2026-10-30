@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { runtimeConfig } from "../config/runtime.js";
 import { PrismaClient } from "../generated/prisma/client.js";
 const prisma = new PrismaClient();
 function normalizeEmail(email) {
@@ -17,8 +18,8 @@ function validateEmailAndPassword(email, password) {
     }
     return null;
 }
-function getCookieOptions() {
-    const isProduction = process.env.NODE_ENV === "production";
+export function getCookieOptions() {
+    const isProduction = runtimeConfig.nodeEnv === "production";
     return {
         httpOnly: true,
         secure: isProduction,
@@ -39,8 +40,8 @@ function clearAuthCookie(res) {
         sameSite: options.sameSite,
     });
 }
-function issueTokenAndRespond(res, user, statusCode) {
-    const jwtSecret = process.env.JWT_SECRET;
+export function issueTokenAndRespond(res, user, statusCode) {
+    const jwtSecret = runtimeConfig.jwtSecret;
     if (!jwtSecret) {
         console.error("JWT_SECRET is not defined in the environment");
         return res

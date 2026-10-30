@@ -8,7 +8,7 @@ interface OAuthProfile {
 	email: string;
 	emailVerified: boolean;
 	name?: string;
-	avatar?: string;
+	avatar?: string | null;
 }
 
 export async function findOrCreateUserFromOAuth(profile: OAuthProfile) {
