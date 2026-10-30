@@ -36,7 +36,8 @@ export function buildRuntimeConfig(env = process.env) {
 export const runtimeConfig = buildRuntimeConfig();
 export function getPrimaryFrontendUrl() {
     if (runtimeConfig.frontendUrl) {
-        return runtimeConfig.frontendUrl.split(",")[0]?.trim() ?? runtimeConfig.frontendUrl;
+        return (runtimeConfig.frontendUrl.split(",")[0]?.trim() ??
+            runtimeConfig.frontendUrl);
     }
     return runtimeConfig.allowedOrigins[0] ?? "http://localhost:3000";
 }

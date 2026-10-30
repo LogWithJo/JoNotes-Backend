@@ -1,8 +1,8 @@
 import jwt from "jsonwebtoken";
 import { getPrimaryFrontendUrl, runtimeConfig } from "../config/runtime.js";
 import { findOrCreateUserFromOAuth } from "../services/oauth/account-linking.js";
-import { exchangeGitHubCode, fetchGitHubUser } from "../services/oauth/github.js";
-import { exchangeGoogleCode, fetchGoogleProfile } from "../services/oauth/google.js";
+import { exchangeGitHubCode, fetchGitHubUser, } from "../services/oauth/github.js";
+import { exchangeGoogleCode, fetchGoogleProfile, } from "../services/oauth/google.js";
 import { getCookieOptions } from "./auth.controller.js";
 function setTokenCookie(res, userId) {
     const token = jwt.sign({ userId }, runtimeConfig.jwtSecret, {

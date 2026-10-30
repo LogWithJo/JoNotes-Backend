@@ -43,4 +43,5 @@ const isDirectRun = process.argv[1] !== undefined &&
 if (isDirectRun) {
     startServer();
 }
+export default app;
 //# sourceMappingURL=server.js.map
