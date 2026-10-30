@@ -2,4 +2,5 @@ import type { Request, Response } from "express";
 export declare function continueAuth(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
 export declare function register(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
 export declare function login(req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
+export declare function logout(_req: Request, res: Response): Promise<Response<any, Record<string, any>>>;
 //# sourceMappingURL=auth.controller.d.ts.map

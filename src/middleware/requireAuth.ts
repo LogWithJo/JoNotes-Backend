@@ -13,16 +13,22 @@ export async function requireAuth(
 	res: Response,
 	next: NextFunction,
 ) {
+	const cookieToken = req.cookies?.token;
 	const authHeader = req.headers.authorization;
 
-	if (typeof authHeader !== "string" || !authHeader.startsWith("Bearer ")) {
-		return res.status(401).json({ error: "Missing or invalid token" });
+	let token: string | null = null;
+
+	if (typeof cookieToken === "string" && cookieToken.length > 0) {
+		token = cookieToken;
+	} else if (
+		typeof authHeader === "string" &&
+		authHeader.startsWith("Bearer ")
+	) {
+		token = authHeader.slice("Bearer ".length).trim();
 	}
 
-	const token = authHeader.slice("Bearer ".length).trim();
-
 	if (!token) {
-		return res.status(401).json({ error: "Missing or invalid token" });
+		return res.status(401).json({ error: "Missing or invalid session token" });
 	}
 
 	const jwtSecret = process.env.JWT_SECRET;
@@ -49,6 +55,6 @@ export async function requireAuth(
 		req.userId = user.id;
 		next();
 	} catch {
-		return res.status(401).json({ error: "Invalid or expired token" });
+		return res.status(401).json({ error: "Invalid or expired session token" });
 	}
 }

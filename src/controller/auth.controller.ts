@@ -25,6 +25,32 @@ function validateEmailAndPassword(email: string, password: unknown) {
 	return null;
 }
 
+function getCookieOptions() {
+	const isProduction = process.env.NODE_ENV === "production";
+
+	return {
+		httpOnly: true,
+		secure: isProduction,
+		sameSite: isProduction ? "none" : "lax",
+		path: "/",
+		maxAge: 7 * 24 * 60 * 60 * 1000,
+	} as const;
+}
+
+function setAuthCookie(res: Response, token: string) {
+	res.cookie("token", token, getCookieOptions());
+}
+
+function clearAuthCookie(res: Response) {
+	const options = getCookieOptions();
+	res.clearCookie("token", {
+		path: options.path,
+		httpOnly: options.httpOnly,
+		secure: options.secure,
+		sameSite: options.sameSite,
+	});
+}
+
 function issueTokenAndRespond(
 	res: Response,
 	user: {
@@ -47,8 +73,9 @@ function issueTokenAndRespond(
 		expiresIn: "7d",
 	});
 
+	setAuthCookie(res, token);
+
 	return res.status(statusCode).json({
-		token,
 		user: {
 			id: user.id,
 			email: user.email,
@@ -141,4 +168,9 @@ export async function register(req: Request, res: Response) {
 
 export async function login(req: Request, res: Response) {
 	return continueAuth(req, res);
+}
+
+export async function logout(_req: Request, res: Response) {
+	clearAuthCookie(res);
+	return res.status(200).json({ message: "Logged out successfully" });
 }

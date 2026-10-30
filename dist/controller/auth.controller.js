@@ -17,6 +17,28 @@ function validateEmailAndPassword(email, password) {
     }
     return null;
 }
+function getCookieOptions() {
+    const isProduction = process.env.NODE_ENV === "production";
+    return {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax",
+        path: "/",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+    };
+}
+function setAuthCookie(res, token) {
+    res.cookie("token", token, getCookieOptions());
+}
+function clearAuthCookie(res) {
+    const options = getCookieOptions();
+    res.clearCookie("token", {
+        path: options.path,
+        httpOnly: options.httpOnly,
+        secure: options.secure,
+        sameSite: options.sameSite,
+    });
+}
 function issueTokenAndRespond(res, user, statusCode) {
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) {
@@ -28,8 +50,8 @@ function issueTokenAndRespond(res, user, statusCode) {
     const token = jwt.sign({ userId: user.id }, jwtSecret, {
         expiresIn: "7d",
     });
+    setAuthCookie(res, token);
     return res.status(statusCode).json({
-        token,
         user: {
             id: user.id,
             email: user.email,
@@ -102,5 +124,9 @@ export async function register(req, res) {
 }
 export async function login(req, res) {
     return continueAuth(req, res);
+}
+export async function logout(_req, res) {
+    clearAuthCookie(res);
+    return res.status(200).json({ message: "Logged out successfully" });
 }
 //# sourceMappingURL=auth.controller.js.map

@@ -18,7 +18,7 @@ const config = {
             "value": "prisma-client"
         },
         "output": {
-            "value": "/home/youssef/Projects/JoNotes-Back/src/generated/prisma",
+            "value": "/home/youssef/Desktop/Projects/JoNotes-Back/src/generated/prisma",
             "fromEnvVar": null
         },
         "config": {
@@ -32,7 +32,7 @@ const config = {
             }
         ],
         "previewFeatures": [],
-        "sourceFilePath": "/home/youssef/Projects/JoNotes-Back/prisma/schema.prisma",
+        "sourceFilePath": "/home/youssef/Desktop/Projects/JoNotes-Back/prisma/schema.prisma",
         "isCustomOutput": true
     },
     "relativePath": "../../../prisma",
