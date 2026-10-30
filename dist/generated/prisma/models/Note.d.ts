@@ -401,9 +401,6 @@ export type NoteUncheckedUpdateManyWithoutUserNestedInput = {
     updateMany?: Prisma.NoteUpdateManyWithWhereWithoutUserInput | Prisma.NoteUpdateManyWithWhereWithoutUserInput[];
     deleteMany?: Prisma.NoteScalarWhereInput | Prisma.NoteScalarWhereInput[];
 };
-export type BoolFieldUpdateOperationsInput = {
-    set?: boolean;
-};
 export type NoteCreateWithoutUserInput = {
     title: string;
     content?: string;

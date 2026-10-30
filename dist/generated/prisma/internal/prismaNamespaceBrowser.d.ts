@@ -43,6 +43,7 @@ export declare const AnyNull: {
 export declare const ModelName: {
     readonly User: "User";
     readonly Account: "Account";
+    readonly RefreshToken: "RefreshToken";
     readonly Note: "Note";
 };
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
@@ -70,6 +71,16 @@ export declare const AccountScalarFieldEnum: {
     readonly createdAt: "createdAt";
 };
 export type AccountScalarFieldEnum = (typeof AccountScalarFieldEnum)[keyof typeof AccountScalarFieldEnum];
+export declare const RefreshTokenScalarFieldEnum: {
+    readonly id: "id";
+    readonly token: "token";
+    readonly userId: "userId";
+    readonly revoked: "revoked";
+    readonly expiresAt: "expiresAt";
+    readonly createdAt: "createdAt";
+    readonly updatedAt: "updatedAt";
+};
+export type RefreshTokenScalarFieldEnum = (typeof RefreshTokenScalarFieldEnum)[keyof typeof RefreshTokenScalarFieldEnum];
 export declare const NoteScalarFieldEnum: {
     readonly id: "id";
     readonly title: "title";

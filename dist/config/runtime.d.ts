@@ -5,6 +5,10 @@ export interface RuntimeConfig {
     frontendUrl: string;
     allowedOrigins: string[];
     jwtSecret: string;
+    jwtRefreshSecret: string;
+    accessTokenExpiresIn: string;
+    refreshTokenExpiresIn: string;
+    refreshTokenExpiresInDays: number;
 }
 export declare function parseAllowedOrigins(input?: string): string[];
 export declare function buildRuntimeConfig(env?: RuntimeEnv): RuntimeConfig;

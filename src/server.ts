@@ -1,9 +1,11 @@
+import { fileURLToPath } from "node:url";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import "dotenv/config";
 import express from "express";
-import { fileURLToPath } from "node:url";
 import { runtimeConfig } from "./config/runtime.js";
+import { getMe, refresh, revokeToken } from "./controller/auth.controller.js";
+import { requireAuth } from "./middleware/requireAuth.js";
 import authRoutes from "./routes/auth.routes.js";
 import notesRoutes from "./routes/notes.routes.js";
 
@@ -34,6 +36,11 @@ app.use(express.json());
 app.use(cookieParser());
 app.use("/auth", authRoutes);
 app.use("/notes", notesRoutes);
+
+// Top-level aliases for /me, /refresh-token, and /revoke-token
+app.get("/me", requireAuth, getMe);
+app.post("/refresh-token", refresh);
+app.post("/revoke-token", revokeToken);
 
 app.get("/", (_req, res) => {
 	res.status(200).json({ message: "Server is alive!" });

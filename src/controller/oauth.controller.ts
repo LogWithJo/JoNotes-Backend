@@ -1,6 +1,5 @@
 import type { Request, Response } from "express";
-import jwt from "jsonwebtoken";
-import { getPrimaryFrontendUrl, runtimeConfig } from "../config/runtime.js";
+import { getPrimaryFrontendUrl } from "../config/runtime.js";
 import { findOrCreateUserFromOAuth } from "../services/oauth/account-linking.js";
 import {
 	exchangeGitHubCode,
@@ -10,14 +9,10 @@ import {
 	exchangeGoogleCode,
 	fetchGoogleProfile,
 } from "../services/oauth/google.js";
-import { getCookieOptions } from "./auth.controller.js";
+import { issueTokens } from "./auth.controller.js";
 
-function setTokenCookie(res: Response, userId: number) {
-	const token = jwt.sign({ userId }, runtimeConfig.jwtSecret, {
-		expiresIn: "7d",
-	});
-
-	res.cookie("token", token, getCookieOptions());
+async function setTokenCookies(res: Response, userId: number) {
+	await issueTokens(res, userId);
 }
 
 export async function redirectToGoogle(_req: Request, res: Response) {
@@ -61,7 +56,7 @@ export async function handleGoogleCallback(req: Request, res: Response) {
 			avatar: profile.picture,
 		});
 
-		setTokenCookie(res, user.id);
+		await setTokenCookies(res, user.id);
 		return res.redirect(getPrimaryFrontendUrl());
 	} catch (error) {
 		console.error("Google OAuth failed:", error);
@@ -108,7 +103,7 @@ export async function handleGitHubCallback(req: Request, res: Response) {
 			avatar: profile.avatar_url ?? null,
 		});
 
-		setTokenCookie(res, user.id);
+		await setTokenCookies(res, user.id);
 		return res.redirect(getPrimaryFrontendUrl());
 	} catch (error) {
 		console.error("GitHub OAuth failed:", error);

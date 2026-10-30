@@ -20,9 +20,10 @@ model User {
   password  String?              // now optional — OAuth-only users won't have one
   name      String?              // populated from OAuth profile if available
   avatar    String?              // profile picture URL from Google/GitHub
-  createdAt DateTime  @default(now())
-  notes     Note[]
-  accounts  Account[]            // one user, many linked login methods
+  createdAt    DateTime       @default(now())
+  notes        Note[]
+  accounts     Account[]            // one user, many linked login methods
+  refreshTokens RefreshToken[]
 }
 
 model Account {
@@ -35,6 +36,20 @@ model Account {
 
   @@unique([provider, providerAccountId])
 }
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  revoked   Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
 model Note {
   id        Int      @id @default(autoincrement())
   title     String

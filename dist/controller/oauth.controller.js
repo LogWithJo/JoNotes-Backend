@@ -1,14 +1,10 @@
-import jwt from "jsonwebtoken";
-import { getPrimaryFrontendUrl, runtimeConfig } from "../config/runtime.js";
+import { getPrimaryFrontendUrl } from "../config/runtime.js";
 import { findOrCreateUserFromOAuth } from "../services/oauth/account-linking.js";
 import { exchangeGitHubCode, fetchGitHubUser, } from "../services/oauth/github.js";
 import { exchangeGoogleCode, fetchGoogleProfile, } from "../services/oauth/google.js";
-import { getCookieOptions } from "./auth.controller.js";
-function setTokenCookie(res, userId) {
-    const token = jwt.sign({ userId }, runtimeConfig.jwtSecret, {
-        expiresIn: "7d",
-    });
-    res.cookie("token", token, getCookieOptions());
+import { issueTokens } from "./auth.controller.js";
+async function setTokenCookies(res, userId) {
+    await issueTokens(res, userId);
 }
 export async function redirectToGoogle(_req, res) {
     const clientId = process.env.GOOGLE_CLIENT_ID;
@@ -42,7 +38,7 @@ export async function handleGoogleCallback(req, res) {
             name: profile.name,
             avatar: profile.picture,
         });
-        setTokenCookie(res, user.id);
+        await setTokenCookies(res, user.id);
         return res.redirect(getPrimaryFrontendUrl());
     }
     catch (error) {
@@ -80,7 +76,7 @@ export async function handleGitHubCallback(req, res) {
             name: profile.name ?? profile.login,
             avatar: profile.avatar_url ?? null,
         });
-        setTokenCookie(res, user.id);
+        await setTokenCookies(res, user.id);
         return res.redirect(getPrimaryFrontendUrl());
     }
     catch (error) {

@@ -3,7 +3,7 @@ import { runtimeConfig } from "../config/runtime.js";
 import { PrismaClient } from "../generated/prisma/client.js";
 const prisma = new PrismaClient();
 export async function requireAuth(req, res, next) {
-    const cookieToken = req.cookies?.token;
+    const cookieToken = req.cookies?.accessToken || req.cookies?.token;
     const authHeader = req.headers.authorization;
     let token = null;
     if (typeof cookieToken === "string" && cookieToken.length > 0) {

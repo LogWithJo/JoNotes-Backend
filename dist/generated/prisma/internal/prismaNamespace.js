@@ -70,6 +70,7 @@ export const AnyNull = runtime.objectEnumValues.instances.AnyNull;
 export const ModelName = {
     User: 'User',
     Account: 'Account',
+    RefreshToken: 'RefreshToken',
     Note: 'Note'
 };
 /**
@@ -95,6 +96,15 @@ export const AccountScalarFieldEnum = {
     providerAccountId: 'providerAccountId',
     userId: 'userId',
     createdAt: 'createdAt'
+};
+export const RefreshTokenScalarFieldEnum = {
+    id: 'id',
+    token: 'token',
+    userId: 'userId',
+    revoked: 'revoked',
+    expiresAt: 'expiresAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
 };
 export const NoteScalarFieldEnum = {
     id: 'id',

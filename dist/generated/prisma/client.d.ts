@@ -30,6 +30,11 @@ export type User = Prisma.UserModel;
  */
 export type Account = Prisma.AccountModel;
 /**
+ * Model RefreshToken
+ *
+ */
+export type RefreshToken = Prisma.RefreshTokenModel;
+/**
  * Model Note
  *
  */

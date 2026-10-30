@@ -7,9 +7,9 @@ interface OAuthProfile {
     avatar?: string | null;
 }
 export declare function findOrCreateUserFromOAuth(profile: OAuthProfile): Promise<{
+    id: number;
     email: string;
     password: string | null;
-    id: number;
     name: string | null;
     avatar: string | null;
     createdAt: Date;

@@ -15,6 +15,24 @@ test("development config allows localhost defaults", () => {
     assert.equal(config.nodeEnv, "development");
     assert.ok(config.allowedOrigins.includes("http://localhost:3000"));
     assert.equal(config.jwtSecret, "dev-secret");
+    assert.equal(config.jwtRefreshSecret, "dev-secret_refresh");
+    assert.equal(config.accessTokenExpiresIn, "15m");
+    assert.equal(config.refreshTokenExpiresIn, "7d");
+    assert.equal(config.refreshTokenExpiresInDays, 7);
+});
+test("custom refresh token settings are respected", () => {
+    const config = buildRuntimeConfig({
+        NODE_ENV: "development",
+        JWT_SECRET: "my-secret",
+        JWT_REFRESH_SECRET: "custom-refresh-secret",
+        ACCESS_TOKEN_EXPIRES_IN: "30m",
+        REFRESH_TOKEN_EXPIRES_IN: "14d",
+        REFRESH_TOKEN_EXPIRES_IN_DAYS: "14",
+    });
+    assert.equal(config.jwtRefreshSecret, "custom-refresh-secret");
+    assert.equal(config.accessTokenExpiresIn, "30m");
+    assert.equal(config.refreshTokenExpiresIn, "14d");
+    assert.equal(config.refreshTokenExpiresInDays, 14);
 });
 test("production config requires frontend url", () => {
     assert.throws(() => {

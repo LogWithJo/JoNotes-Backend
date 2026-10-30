@@ -6,6 +6,10 @@ export interface RuntimeConfig {
 	frontendUrl: string;
 	allowedOrigins: string[];
 	jwtSecret: string;
+	jwtRefreshSecret: string;
+	accessTokenExpiresIn: string;
+	refreshTokenExpiresIn: string;
+	refreshTokenExpiresInDays: number;
 }
 
 export function parseAllowedOrigins(input?: string): string[] {
@@ -43,12 +47,29 @@ export function buildRuntimeConfig(
 		throw new Error("JWT_SECRET is required in production");
 	}
 
+	const resolvedJwtSecret = jwtSecret ?? "development-jwt-secret-change-me";
+	const jwtRefreshSecret =
+		env.JWT_REFRESH_SECRET?.trim() || `${resolvedJwtSecret}_refresh`;
+	const accessTokenExpiresIn = env.ACCESS_TOKEN_EXPIRES_IN?.trim() || "15m";
+	const refreshTokenExpiresIn = env.REFRESH_TOKEN_EXPIRES_IN?.trim() || "7d";
+	const parsedRefreshDays = Number.parseInt(
+		env.REFRESH_TOKEN_EXPIRES_IN_DAYS ?? "7",
+		10,
+	);
+	const refreshTokenExpiresInDays = Number.isFinite(parsedRefreshDays)
+		? parsedRefreshDays
+		: 7;
+
 	return {
 		nodeEnv,
 		port: Number.isFinite(port) ? port : 3000,
 		frontendUrl,
 		allowedOrigins,
-		jwtSecret: jwtSecret ?? "development-jwt-secret-change-me",
+		jwtSecret: resolvedJwtSecret,
+		jwtRefreshSecret,
+		accessTokenExpiresIn,
+		refreshTokenExpiresIn,
+		refreshTokenExpiresInDays,
 	};
 }
 
