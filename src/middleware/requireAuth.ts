@@ -14,7 +14,7 @@ export async function requireAuth(
 	res: Response,
 	next: NextFunction,
 ) {
-	const cookieToken = req.cookies?.accessToken || req.cookies?.token;
+	const cookieToken = req.cookies.accessToken || req.cookies.token;
 	const authHeader = req.headers.authorization;
 
 	let token: string | null = null;

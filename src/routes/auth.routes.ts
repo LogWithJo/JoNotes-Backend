@@ -1,3 +1,4 @@
+import cookieParser from "cookie-parser";
 import { Router } from "express";
 import {
 	continueAuth,
@@ -17,6 +18,8 @@ import {
 import { requireAuth } from "../middleware/requireAuth.js";
 
 const router = Router();
+
+router.use(cookieParser());
 
 router.post("/continue", continueAuth);
 router.post("/register", register);
