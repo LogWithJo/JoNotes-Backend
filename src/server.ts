@@ -58,3 +58,5 @@ const isDirectRun =
 if (isDirectRun) {
 	startServer();
 }
+
+module.exports(app)
