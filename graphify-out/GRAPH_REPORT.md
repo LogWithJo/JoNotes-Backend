@@ -1,17 +1,17 @@
 # Graph Report - JoNotes-Back  (2026-10-30)
 
 ## Corpus Check
-- 24 files · ~6,247 words
+- 24 files · ~6,266 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 7 file(s) not represented in the graph (top: (none) 2, .map 2, .example 1)
 
 ## Summary
-- 199 nodes · 324 edges · 12 communities (9 shown, 3 thin omitted)
+- 200 nodes · 329 edges · 12 communities (9 shown, 3 thin omitted)
 - Extraction: 88% EXTRACTED · 12% INFERRED · 0% AMBIGUOUS · INFERRED: 39 edges (avg confidence: 0.89)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `3e86beba`
+- Built from commit: `c0afd6db`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -31,7 +31,7 @@
 
 ## God Nodes (most connected - your core abstractions)
 1. `compilerOptions` - 23 edges
-2. `refresh()` - 10 edges
+2. `refresh()` - 11 edges
 3. `issueTokens()` - 9 edges
 4. `express` - 9 edges
 5. `continueAuth()` - 8 edges
@@ -39,7 +39,7 @@
 7. `handleGoogleCallback()` - 7 edges
 8. `scripts` - 7 edges
 9. `clearAuthCookies()` - 6 edges
-10. `dotenv` - 6 edges
+10. `revokeToken()` - 6 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `Auth Continue Endpoint` --implements--> `continueAuth()`  [INFERRED]
@@ -50,8 +50,8 @@
   API_ENDPOINTS.md → src/controller/auth.controller.ts
 - `Auth Revoke Token Endpoint` --implements--> `revokeToken()`  [INFERRED]
   API_ENDPOINTS.md → src/controller/auth.controller.ts
-- `JWT Bearer Authentication` --implements--> `requireAuth()`  [INFERRED]
-  API_ENDPOINTS.md → src/middleware/requireAuth.ts
+- `Auth Logout Endpoint` --implements--> `logout()`  [INFERRED]
+  API_ENDPOINTS.md → src/controller/auth.controller.ts
 
 ## Import Cycles
 - None detected.
@@ -64,11 +64,11 @@
 
 ### Community 0 - "Package Dependencies & Tooling"
 Cohesion: 0.06
-Nodes (44): author, dependencies, bcrypt@^6.0.0, @biomejs/biome@^2.5.12, cookie-parser@^1.4.7, cors@^2.8.6, dotenv@^17.4.2, jsonwebtoken@^9.0.3 (+36 more)
+Nodes (45): author, dependencies, bcrypt@^6.0.0, @biomejs/biome@^2.5.12, cookie-parser@^1.4.7, cors@^2.8.6, dotenv@^17.4.2, express@^5.2.1 (+37 more)
 
 ### Community 1 - "Authentication & Token Management"
 Cohesion: 0.12
-Nodes (30): Auth Continue Endpoint, Auth Login Endpoint, Auth Logout Endpoint, Auth Profile (Me) Endpoint, Auth Refresh Token Endpoint, Auth Register Endpoint, Auth Revoke Token Endpoint, Refresh Token Rotation (+22 more)
+Nodes (29): Auth Continue Endpoint, Auth Login Endpoint, Auth Logout Endpoint, Auth Refresh Token Endpoint, Auth Register Endpoint, Auth Revoke Token Endpoint, Refresh Token Rotation, clearAuthCookie() (+21 more)
 
 ### Community 2 - "TypeScript Compiler Configuration"
 Cohesion: 0.08
@@ -79,12 +79,12 @@ Cohesion: 0.17
 Nodes (18): axios@^1.20.0, axios, getPrimaryFrontendUrl(), handleGitHubCallback(), handleGoogleCallback(), redirectToGitHub(), redirectToGoogle(), setTokenCookies() (+10 more)
 
 ### Community 5 - "Notes CRUD & Pinning"
-Cohesion: 0.14
-Nodes (18): Notes Create Endpoint, Notes Query Delete Endpoint, Notes Get By ID Endpoint, Notes List Endpoint, Notes Toggle Pin Endpoint, Notes Query Update Endpoint, Pinned Note Limit Rule, express@^5.2.1 (+10 more)
+Cohesion: 0.11
+Nodes (22): JWT Bearer Authentication, Notes Create Endpoint, Notes Query Delete Endpoint, Notes Get By ID Endpoint, Notes List Endpoint, Notes Toggle Pin Endpoint, Notes Query Update Endpoint, Pinned Note Limit Rule (+14 more)
 
 ### Community 6 - "Runtime Configuration & Testing"
-Cohesion: 0.12
-Nodes (12): JWT Bearer Authentication, buildRuntimeConfig(), parseAllowedOrigins(), runtimeConfig, RuntimeEnv, prisma, prisma, requireAuth() (+4 more)
+Cohesion: 0.16
+Nodes (9): Auth Profile (Me) Endpoint, buildRuntimeConfig(), parseAllowedOrigins(), runtimeConfig, RuntimeEnv, getMe(), prisma, router (+1 more)
 
 ### Community 7 - "Biome Linter & Formatter Config"
 Cohesion: 0.18
@@ -107,16 +107,16 @@ Nodes (3): builds, routes, version
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `express` connect `Notes CRUD & Pinning` to `Package Dependencies & Tooling`, `Authentication & Token Management`, `OAuth Services & Callbacks`, `Runtime Configuration & Testing`?**
-  _High betweenness centrality (0.146) - this node is a cross-community bridge._
+  _High betweenness centrality (0.138) - this node is a cross-community bridge._
 - **Are the 4 inferred relationships involving `refresh()` (e.g. with `Auth Refresh Token Endpoint` and `Refresh Token Rotation`) actually correct?**
   _`refresh()` has 4 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `Refresh Token Rotation`, `Auth Continue Endpoint`, `Auth Login Endpoint` to the rest of the system?**
   _19 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Package Dependencies & Tooling` be split into smaller, more focused modules?**
-  _Cohesion score 0.05697278911564626 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05551020408163265 - nodes in this community are weakly interconnected._
 - **Why does `scripts` connect `NPM Scripts & Build Pipeline` to `Package Dependencies & Tooling`?**
   _High betweenness centrality (0.046) - this node is a cross-community bridge._
 - **Should `Authentication & Token Management` be split into smaller, more focused modules?**
-  _Cohesion score 0.12121212121212122 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.12473118279569892 - nodes in this community are weakly interconnected._
 - **Why does `dotenv` connect `Package Dependencies & Tooling` to `Runtime Configuration & Testing`?**
-  _High betweenness centrality (0.042) - this node is a cross-community bridge._
+  _High betweenness centrality (0.041) - this node is a cross-community bridge._

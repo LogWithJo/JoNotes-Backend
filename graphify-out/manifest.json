@@ -66,9 +66,9 @@
     "semantic_hash": ""
   },
   "src/controller/auth.controller.ts": {
-    "mtime": 1793391709.8154428,
-    "seen": 1793391807.606224,
-    "ast_hash": "d13dafe2ba3cf41244fca4e8dc5aa467",
+    "mtime": 1793393953.6277444,
+    "seen": 1793394010.8001964,
+    "ast_hash": "6edcadc40fb1ebb7d1024b1324625349",
     "semantic_hash": ""
   },
   "src/controller/notes.controller.ts": {
@@ -84,16 +84,16 @@
     "semantic_hash": "a22e80b3eeddcab77233a4937eeb6cd7"
   },
   "src/middleware/requireAuth.ts": {
-    "mtime": 1793383798.0993145,
-    "seen": 1793384504.8608856,
-    "ast_hash": "d295cc2646c93037b29ed1298a8dde29",
-    "semantic_hash": "d295cc2646c93037b29ed1298a8dde29"
+    "mtime": 1793393953.6297443,
+    "seen": 1793394010.8002055,
+    "ast_hash": "b30f28fa80d034c216e096667a816b06",
+    "semantic_hash": ""
   },
   "src/routes/auth.routes.ts": {
-    "mtime": 1793383888.7772577,
-    "seen": 1793384504.8608866,
-    "ast_hash": "95ee90ae638c7d4978e08f18ff841d19",
-    "semantic_hash": "95ee90ae638c7d4978e08f18ff841d19"
+    "mtime": 1793393941.3455942,
+    "seen": 1793394010.800208,
+    "ast_hash": "a67e882870e71b4f896c4d76c1f2c007",
+    "semantic_hash": ""
   },
   "src/routes/notes.routes.ts": {
     "mtime": 1788827623.8086836,
@@ -102,10 +102,10 @@
     "semantic_hash": "ad59a384b8e5b614f1d7b8368541677f"
   },
   "src/server.ts": {
-    "mtime": 1793383902.8004034,
-    "seen": 1793384504.860888,
-    "ast_hash": "12772fdac0e0f9b01282d368d075049a",
-    "semantic_hash": "12772fdac0e0f9b01282d368d075049a"
+    "mtime": 1793393958.3608022,
+    "seen": 1793394010.8002138,
+    "ast_hash": "888c4f83771a363d94f30a0a16e75270",
+    "semantic_hash": ""
   },
   "src/services/oauth/account-linking.ts": {
     "mtime": 1793323037.7462158,
@@ -126,10 +126,10 @@
     "semantic_hash": "e3b15ed8fe40d1cc6c714907760eca2e"
   },
   "tsconfig.json": {
-    "mtime": 1788831875.9560132,
-    "seen": 1793384504.8608916,
-    "ast_hash": "f86ac5e42901fc760031c59154819450",
-    "semantic_hash": "f86ac5e42901fc760031c59154819450"
+    "mtime": 1793393946.0026512,
+    "seen": 1793394010.8002253,
+    "ast_hash": "e311a7643d77eab384ba92df38d4962a",
+    "semantic_hash": ""
   },
   "vercel.json": {
     "mtime": 1793324001.2637713,

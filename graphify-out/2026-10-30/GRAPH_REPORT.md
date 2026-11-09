@@ -1,7 +1,7 @@
 # Graph Report - JoNotes-Back  (2026-10-30)
 
 ## Corpus Check
-- 24 files · ~6,232 words
+- 24 files · ~6,247 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 7 file(s) not represented in the graph (top: (none) 2, .map 2, .example 1)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `b9739e00`
+- Built from commit: `3e86beba`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -32,14 +32,14 @@
 ## God Nodes (most connected - your core abstractions)
 1. `compilerOptions` - 23 edges
 2. `refresh()` - 10 edges
-3. `express` - 9 edges
-4. `issueTokens()` - 9 edges
+3. `issueTokens()` - 9 edges
+4. `express` - 9 edges
 5. `continueAuth()` - 8 edges
-6. `scripts` - 7 edges
+6. `handleGitHubCallback()` - 7 edges
 7. `handleGoogleCallback()` - 7 edges
-8. `handleGitHubCallback()` - 7 edges
-9. `dotenv` - 6 edges
-10. `clearAuthCookies()` - 6 edges
+8. `scripts` - 7 edges
+9. `clearAuthCookies()` - 6 edges
+10. `dotenv` - 6 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `Auth Continue Endpoint` --implements--> `continueAuth()`  [INFERRED]
@@ -99,7 +99,7 @@ Cohesion: 0.50
 Nodes (3): builds, routes, version
 
 ## Knowledge Gaps
-- **19 isolated node(s):** `Refresh Token Rotation`, `Auth Continue Endpoint`, `Auth Login Endpoint`, `Auth Logout Endpoint`, `Auth Refresh Token Endpoint` (+14 more)
+- **19 isolated node(s):** `Refresh Token Rotation`, `Auth Continue Endpoint`, `Auth Login Endpoint`, `Auth Logout Endpoint`, `Auth Profile (Me) Endpoint` (+14 more)
   These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 84 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **3 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
