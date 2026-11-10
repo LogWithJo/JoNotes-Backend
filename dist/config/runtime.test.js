@@ -20,6 +20,17 @@ test("development config allows localhost defaults", () => {
     assert.equal(config.refreshTokenExpiresIn, "7d");
     assert.equal(config.refreshTokenExpiresInDays, 7);
 });
+test("custom frontend origins are added without removing localhost origins", () => {
+    const config = buildRuntimeConfig({
+        NODE_ENV: "production",
+        FRONTEND_URL: "https://app.example.com, https://staging.example.com",
+        JWT_SECRET: "prod-secret",
+    });
+    assert.ok(config.allowedOrigins.includes("http://localhost:3000"));
+    assert.ok(config.allowedOrigins.includes("http://localhost:5173"));
+    assert.ok(config.allowedOrigins.includes("https://app.example.com"));
+    assert.ok(config.allowedOrigins.includes("https://staging.example.com"));
+});
 test("custom refresh token settings are respected", () => {
     const config = buildRuntimeConfig({
         NODE_ENV: "development",

@@ -4,6 +4,10 @@ import jwt from "jsonwebtoken";
 import { runtimeConfig } from "../config/runtime.js";
 import { PrismaClient } from "../generated/prisma/client.js";
 const prisma = new PrismaClient();
+function getRequestCookie(req, name) {
+    const value = req.cookies[name];
+    return typeof value === "string" ? value.trim() : "";
+}
 function normalizeEmail(email) {
     return typeof email === "string" ? email.trim().toLowerCase() : "";
 }
@@ -249,10 +253,7 @@ export async function getMe(req, res) {
     }
 }
 export async function refresh(req, res) {
-    const rawToken = req.cookies?.refreshToken ||
-        (typeof req.body?.refreshToken === "string"
-            ? req.body.refreshToken.trim()
-            : null);
+    const rawToken = getRequestCookie(req, "refreshToken");
     if (!rawToken) {
         return res.status(400).json({ error: "Refresh token is required" });
     }
@@ -307,10 +308,10 @@ export async function refresh(req, res) {
     }
 }
 export async function revokeToken(req, res) {
-    const rawToken = req.cookies?.refreshToken ||
+    const rawToken = getRequestCookie(req, "refreshToken") ||
         (typeof req.body?.refreshToken === "string"
             ? req.body.refreshToken.trim()
-            : null);
+            : "");
     if (!rawToken) {
         return res.status(400).json({ error: "Refresh token is required" });
     }
@@ -328,10 +329,10 @@ export async function revokeToken(req, res) {
     }
 }
 export async function logout(req, res) {
-    const rawToken = req.cookies?.refreshToken ||
+    const rawToken = getRequestCookie(req, "refreshToken") ||
         (typeof req.body?.refreshToken === "string"
             ? req.body.refreshToken.trim()
-            : null);
+            : "");
     if (rawToken) {
         try {
             await prisma.refreshToken.updateMany({

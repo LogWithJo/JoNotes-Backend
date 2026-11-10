@@ -1,6 +1,6 @@
 export type RuntimeEnv = Record<string, string | undefined>;
 export interface RuntimeConfig {
-    nodeEnv: "development" | "production" | "test";
+    nodeEnv: 'development' | 'production' | 'test';
     port: number;
     frontendUrl: string;
     allowedOrigins: string[];

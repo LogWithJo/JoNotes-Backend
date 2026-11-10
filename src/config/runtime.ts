@@ -12,6 +12,13 @@ export interface RuntimeConfig {
   refreshTokenExpiresInDays: number;
 }
 
+const localDevelopmentOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:5173',
+];
+
 export function parseAllowedOrigins(input?: string): string[] {
   const values = (input ?? '')
     .split(',')
@@ -22,12 +29,7 @@ export function parseAllowedOrigins(input?: string): string[] {
     return values;
   }
 
-  return [
-    'http://localhost:3000',
-    'http://localhost:5173',
-    'http://127.0.0.1:3000',
-    'http://127.0.0.1:5173',
-  ];
+  return localDevelopmentOrigins;
 }
 
 export function buildRuntimeConfig(
@@ -36,7 +38,9 @@ export function buildRuntimeConfig(
   const nodeEnv = (env.NODE_ENV ?? 'development') as RuntimeConfig['nodeEnv'];
   const port = Number.parseInt(env.PORT ?? '3000', 10);
   const frontendUrl = (env.FRONTEND_URL ?? '').trim();
-  const allowedOrigins = parseAllowedOrigins(frontendUrl);
+  const allowedOrigins = [
+    ...new Set([...localDevelopmentOrigins, ...parseAllowedOrigins(frontendUrl)]),
+  ];
 
   if (nodeEnv === 'production' && !frontendUrl) {
     throw new Error('FRONTEND_URL is required in production');
@@ -83,6 +87,5 @@ export function getPrimaryFrontendUrl(): string {
     );
   }
 
-  // return runtimeConfig.allowedOrigins[0] ?? "http://localhost:3000";
-  return 'http://localhost:3000';
+  return runtimeConfig.allowedOrigins[0] ?? 'http://localhost:3000';
 }

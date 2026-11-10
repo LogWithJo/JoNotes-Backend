@@ -1,8 +1,10 @@
+import cookieParser from "cookie-parser";
 import { Router } from "express";
 import { continueAuth, getMe, login, logout, refresh, register, revokeToken, } from "../controller/auth.controller.js";
 import { handleGitHubCallback, handleGoogleCallback, redirectToGitHub, redirectToGoogle, } from "../controller/oauth.controller.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 const router = Router();
+router.use(cookieParser());
 router.post("/continue", continueAuth);
 router.post("/register", register);
 router.post("/login", login);

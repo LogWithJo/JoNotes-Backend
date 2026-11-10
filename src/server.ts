@@ -1,8 +1,8 @@
 import { fileURLToPath } from 'node:url';
 import cookieParser from 'cookie-parser';
-import cors from 'cors';
+import cors, { type CorsOptions } from 'cors';
 import 'dotenv/config';
-import express from 'express';
+import express, { type NextFunction, type Request, type Response } from 'express';
 import { runtimeConfig } from './config/runtime.js';
 import { getMe, refresh, revokeToken } from './controller/auth.controller.js';
 import { requireAuth } from './middleware/requireAuth.js';
@@ -12,24 +12,35 @@ import notesRoutes from './routes/notes.routes.js';
 const app = express();
 
 app.set('trust proxy', 1);
+app.set('strict routing', false);
 
-app.use(
+const corsOptions: CorsOptions = {
+  origin: (origin, callback) => {
+    // Requests from server-side tools do not have an Origin header.
+    if (!origin || runtimeConfig.allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  // Let the explicit global OPTIONS handler below finish preflight requests.
+  preflightContinue: true,
+};
+
+// Keep CORS before parsers and every application route so 401s and errors
+// emitted by later middleware retain the appropriate response headers.
+app.use(cors(corsOptions));
+
+// Express 5 no longer accepts the legacy "*" path pattern here. A RegExp
+// matches every path, including '/', and provides the same global handling.
+app.options(
+  /.*/,
   cors({
-    origin: (origin, callback) => {
-      if (!origin) {
-        return callback(null, true);
-      }
-
-      if (runtimeConfig.allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-
-      return callback(new Error('Not allowed by CORS'));
-    },
-    // origin: '*',
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    ...corsOptions,
+    preflightContinue: false,
   }),
 );
 
@@ -50,6 +61,19 @@ app.get('/', (_req, res) => {
 app.get('/health', (_req, res) => {
   res.status(200).json({ ok: true, environment: runtimeConfig.nodeEnv });
 });
+
+// CORS has already run by this point, so API errors (including unhandled
+// exceptions) return the same CORS headers as successful responses.
+app.use(
+  (error: unknown, _req: Request, res: Response, _next: NextFunction) => {
+    console.error(error);
+    if (res.headersSent) {
+      return;
+    }
+
+    res.status(500).json({ error: 'Internal server error' });
+  },
+);
 
 export function startServer() {
   return app.listen(runtimeConfig.port, '0.0.0.0', () => {
