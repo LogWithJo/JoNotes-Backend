@@ -15,18 +15,18 @@ app.set('trust proxy', 1);
 
 app.use(
   cors({
-    // origin: (origin, callback) => {
-    // 	if (!origin) {
-    // 		return callback(null, true);
-    // 	}
+    origin: (origin, callback) => {
+      if (!origin) {
+        return callback(null, true);
+      }
 
-    // 	if (runtimeConfig.allowedOrigins.includes(origin)) {
-    // 		return callback(null, true);
-    // 	}
+      if (runtimeConfig.allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
 
-    // 	return callback(new Error("Not allowed by CORS"));
-    // },
-    origin: '*',
+      return callback(new Error('Not allowed by CORS'));
+    },
+    // origin: '*',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
