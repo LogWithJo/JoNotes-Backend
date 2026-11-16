@@ -9,6 +9,7 @@
 		"build": "prisma generate && tsc",
 		"start": "node dist/server.js",
 		"test": "tsx --test src/*.test.ts src/**/*.test.ts",
+		"seed:pagination-notes": "tsx prisma/seed-pagination-notes.ts",
 		"dev": "tsx watch src/server.ts",
 		"prestart": "npm run build"
 	},

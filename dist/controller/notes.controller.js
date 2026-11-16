@@ -1,4 +1,5 @@
 import { PrismaClient } from "../generated/prisma/client.js";
+import { PaginationValidationError, buildCursorPaginationResponse, buildOffsetPaginationResponse, decodeNoteCursor, parseFeedLimit, parseOffsetPagination, } from "./notes.pagination.js";
 const prisma = new PrismaClient();
 export async function createNote(req, res) {
     const { title, category, content } = req.body;
@@ -20,7 +21,7 @@ export async function createNote(req, res) {
     res.status(201).json(note);
 }
 export async function getNotes(req, res) {
-    const { category, search, sort, id } = req.query;
+    const { category, search, sort, id, page, limit } = req.query;
     const userId = req.userId;
     if (userId === undefined) {
         return res.status(401).json({ error: "Unauthorized" });
@@ -55,8 +56,64 @@ export async function getNotes(req, res) {
         orderBy = { title: "asc" };
     if (sort === "za")
         orderBy = { title: "desc" };
+    let pagination;
+    try {
+        pagination = parseOffsetPagination(page, limit);
+    }
+    catch (error) {
+        if (error instanceof PaginationValidationError) {
+            return res.status(400).json({ error: error.message });
+        }
+        throw error;
+    }
+    if (pagination !== undefined) {
+        const [items, total] = await prisma.$transaction([
+            prisma.note.findMany({
+                where,
+                orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+                skip: pagination.skip,
+                take: pagination.limit,
+            }),
+            prisma.note.count({ where }),
+        ]);
+        return res.status(200).json(buildOffsetPaginationResponse(items, total, pagination.page, pagination.limit));
+    }
     const notes = await prisma.note.findMany({ where, orderBy });
     res.status(200).json(notes);
+}
+export async function getNotesFeed(req, res) {
+    const userId = req.userId;
+    if (userId === undefined) {
+        return res.status(401).json({ error: "Unauthorized" });
+    }
+    let limit;
+    let cursor;
+    try {
+        limit = parseFeedLimit(req.query.limit);
+        cursor = decodeNoteCursor(req.query.cursor);
+    }
+    catch (error) {
+        if (error instanceof PaginationValidationError) {
+            return res.status(400).json({ error: error.message });
+        }
+        throw error;
+    }
+    const notes = await prisma.note.findMany({
+        where: {
+            userId,
+            ...(cursor === undefined
+                ? {}
+                : {
+                    OR: [
+                        { createdAt: { lt: cursor.createdAt } },
+                        { createdAt: cursor.createdAt, id: { lt: cursor.id } },
+                    ],
+                }),
+        },
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        take: limit + 1,
+    });
+    res.status(200).json(buildCursorPaginationResponse(notes, limit));
 }
 export async function getNoteById(req, res) {
     const id = Number(req.params.id);

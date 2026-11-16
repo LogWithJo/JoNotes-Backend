@@ -1,37 +1,38 @@
 # JoNotes Backend API Endpoints
 
-This document describes the current backend API implemented by the project.
+This reference describes the routes registered by the current Express application.
 
 ## Base URL
 
 - Local development: `http://localhost:3000`
 
-## Authentication model
+## Authentication
 
-Protected routes accept a JWT in either of these ways:
+Protected endpoints accept an access token in either of these forms:
 
-- `Authorization: Bearer <access_token>`
-- HTTP-only access-token cookies: `token` or `accessToken`
+- `Authorization: Bearer access-token-from-login-response`
+- The HTTP-only `accessToken` or `token` cookie
 
-The server validates access tokens through the `requireAuth` middleware. The `refreshToken` cookie is used by refresh, revoke, and logout operations; it is not an access token for protected routes. Refresh tokens are stored in the database and can be rotated or revoked.
+The `requireAuth` middleware validates the access token and checks that its user still exists. Refresh tokens are kept in the `refreshToken` HTTP-only cookie and stored in the database; they are used by refresh, revoke, and logout, not as access tokens.
 
-## Cross-origin requests
+Successful credential and OAuth sign-ins set `token`, `accessToken`, and `refreshToken` cookies. Refresh rotates the refresh token. In production, auth cookies are secure and use `SameSite=None`; in other modes they use `SameSite=Lax`.
 
-- CORS requests are allowed from the configured `FRONTEND_URL` origins and the local development origins `http://localhost:3000`, `http://localhost:5173`, `http://127.0.0.1:3000`, and `http://127.0.0.1:5173`.
+## CORS
+
 - Credentialed requests are enabled.
+- Origins include the configured comma-separated `FRONTEND_URL` values and `http://localhost:3000`, `http://localhost:5173`, `http://127.0.0.1:3000`, and `http://127.0.0.1:5173`.
+- Requests without an `Origin` header are allowed.
 - Allowed methods: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, and `OPTIONS`.
 - Allowed headers: `Content-Type` and `Authorization`.
-- Valid preflight requests are handled for all paths.
+- Preflight requests are handled for all paths.
 
 ---
 
-## 1) Health and status
+## 1. Health and status
 
 ### `GET /`
 
-Returns a basic server status payload.
-
-**Response**
+Returns basic server status.
 
 ```json
 {
@@ -39,14 +40,11 @@ Returns a basic server status payload.
 }
 ```
 
-**Status codes**
-- `200 OK`
+Status: `200 OK`.
 
 ### `GET /health`
 
-Returns a lightweight service health response.
-
-**Response**
+Returns the current runtime mode.
 
 ```json
 {
@@ -55,18 +53,17 @@ Returns a lightweight service health response.
 }
 ```
 
-**Status codes**
-- `200 OK`
+Status: `200 OK`.
 
 ---
 
-## 2) Authentication routes
+## 2. Authentication routes
 
-Base route: `/auth`
+Base route: `/auth`.
 
 ### `POST /auth/continue`
 
-Creates a user or logs in an existing user using email/password. This is the main credential-based login flow.
+Creates an account when the normalized email is new, or signs in an existing password-based account.
 
 **Request body**
 
@@ -77,13 +74,7 @@ Creates a user or logs in an existing user using email/password. This is the mai
 }
 ```
 
-**Behavior**
-- Normalizes and validates the email address.
-- Requires a password between 8 and 128 characters.
-- Creates a user if none exists.
-- Verifies the password for existing users.
-- Sets auth cookies (`token`, `accessToken`, `refreshToken`).
-- Returns the auth tokens without returning the user profile in the response.
+Email is trimmed and lowercased. A valid email and a password of 8 to 128 characters are required. If the email belongs to an OAuth-only account without a password, the request returns `401`.
 
 **Success response**
 
@@ -97,29 +88,21 @@ Creates a user or logs in an existing user using email/password. This is the mai
 }
 ```
 
-**Status codes**
+The same tokens are set in HTTP-only cookies. Status codes:
+
 - `200 OK` for a successful login
-- `201 Created` for a newly created account
+- `201 Created` for a new account
 - `400 Bad Request` for invalid input
 - `401 Unauthorized` for invalid credentials
-- `500 Internal Server Error` for unexpected server errors
+- `500 Internal Server Error` for an unexpected authentication error
 
-### `POST /auth/register`
+### `POST /auth/register` and `POST /auth/login`
 
-Alias of `POST /auth/continue`.
-
-### `POST /auth/login`
-
-Alias of `POST /auth/continue`.
+Aliases of `POST /auth/continue`; they have the same request body, behavior, response, and status codes.
 
 ### `GET /auth/me`
 
-Returns the authenticated user profile.
-
-**Headers**
-- `Authorization: Bearer <access_token>` or valid auth cookies
-
-**Success response**
+Returns the authenticated user's profile. Requires an access token.
 
 ```json
 {
@@ -133,20 +116,11 @@ Returns the authenticated user profile.
 }
 ```
 
-**Status codes**
-- `200 OK`
-- `401 Unauthorized` when the token is missing or invalid
-- `404 Not Found` if the user no longer exists
+Status codes: `200 OK`, `401 Unauthorized` for a missing or invalid access token, `404 Not Found` if the user no longer exists, and `500 Internal Server Error` if the profile lookup fails.
 
 ### `POST /auth/refresh`
 
-Issues a new access token and rotates the refresh token.
-
-**Request**
-
-- No request body. Reads the previous `refreshToken` from the `refreshToken` HTTP-only cookie. A token in the request body is not used.
-
-**Success response**
+Reads the refresh token from the `refreshToken` cookie; a request-body token is not used. Returns and sets a new access/refresh token pair after revoking the old refresh token.
 
 ```json
 {
@@ -158,19 +132,11 @@ Issues a new access token and rotates the refresh token.
 }
 ```
 
-**Status codes**
-- `200 OK`
-- `400 Bad Request` if no refresh token is provided
-- `401 Unauthorized` if the token is invalid, expired, revoked, or the user no longer exists
-- `500 Internal Server Error` for unexpected refresh failures
+Status codes: `200 OK`, `400 Bad Request` if the cookie is missing, `401 Unauthorized` if the token is invalid, expired, revoked, or its user is missing, and `500 Internal Server Error` for a refresh operation failure.
 
 ### `POST /auth/revoke`
 
-Revokes a refresh token so it cannot be used again.
-
-**Request**
-
-The refresh token may be provided in the `refreshToken` HTTP-only cookie or in the JSON body. If both are present, the cookie is used.
+Revokes the refresh token supplied in the `refreshToken` cookie, or in the JSON body if no cookie token is supplied.
 
 ```json
 {
@@ -178,26 +144,11 @@ The refresh token may be provided in the `refreshToken` HTTP-only cookie or in t
 }
 ```
 
-**Success response**
-
-```json
-{
-  "message": "Token revoked successfully"
-}
-```
-
-The response also clears the auth cookies.
-
-**Status codes**
-- `200 OK`
-- `400 Bad Request` if neither the cookie nor the request body provides a refresh token
-- `500 Internal Server Error` for unexpected errors
+On success, returns `{"message":"Token revoked successfully"}` and clears the auth cookies. Status codes: `200 OK`, `400 Bad Request` if no token is supplied, and `500 Internal Server Error` if revocation fails.
 
 ### `POST /auth/logout`
 
-Attempts to revoke the refresh token if provided in the `refreshToken` HTTP-only cookie or JSON body. If both are present, the cookie is used. Clears all auth cookies whether or not a refresh token is provided.
-
-**Optional request body**
+Attempts to revoke a refresh token from the `refreshToken` cookie or, if absent, the request body. The body is optional:
 
 ```json
 {
@@ -205,88 +156,56 @@ Attempts to revoke the refresh token if provided in the `refreshToken` HTTP-only
 }
 ```
 
-**Success response**
+Always clears auth cookies and returns `{"message":"Logged out successfully"}` with `200 OK`. If database revocation fails, the error is logged and logout still returns `200`.
 
-```json
-{
-  "message": "Logged out successfully"
-}
-```
+### `GET /auth/google` and `GET /auth/google/callback`
 
-**Status codes**
-- `200 OK`
+`GET /auth/google` redirects to Google's consent screen and requires `GOOGLE_CLIENT_ID` and `GOOGLE_CALLBACK_URL`. It requests the `openid email profile` scopes.
 
-### `GET /auth/google`
+The callback exchanges the supplied `code`, finds or creates/links the account, sets auth cookies, and redirects to the first `FRONTEND_URL` origin. It returns `400 Bad Request` if the code is missing and `500 Internal Server Error` if OAuth configuration or sign-in fails.
 
-Redirects the user to the Google OAuth consent screen.
+### `GET /auth/github` and `GET /auth/github/callback`
 
-**Behavior**
-- Requires `GOOGLE_CLIENT_ID` and `GOOGLE_CALLBACK_URL` to be configured.
-- Uses the `openid email profile` scope.
-- Returns `500 Internal Server Error` if the required OAuth configuration is missing.
+`GET /auth/github` redirects to GitHub and requires `GITHUB_CLIENT_ID` and `GITHUB_CALLBACK_URL`. It requests `read:user user:email`.
 
-### `GET /auth/google/callback`
+The callback exchanges the supplied `code`, finds or creates/links the account, sets auth cookies, and redirects to the first `FRONTEND_URL` origin. It returns `400 Bad Request` if the code is missing and `500 Internal Server Error` if OAuth configuration or sign-in fails.
 
-Handles the Google OAuth callback, exchanges the auth code, creates or links the account, sets cookies, and redirects to the frontend.
+### Top-level authentication aliases
 
-**Possible results**
-- Redirect to frontend on success
-- `400 Bad Request` when no OAuth code is present
-- `500 Internal Server Error` if Google sign-in fails
+The server also registers:
 
-### `GET /auth/github`
-
-Redirects the user to the GitHub OAuth login flow.
-
-**Behavior**
-- Requires `GITHUB_CLIENT_ID` and `GITHUB_CALLBACK_URL` to be configured.
-- Requests `read:user user:email` scope.
-- Returns `500 Internal Server Error` if the required OAuth configuration is missing.
-
-### `GET /auth/github/callback`
-
-Handles the GitHub OAuth callback, exchanges the code, creates or links the account, sets cookies, and redirects to the frontend.
-
-**Possible results**
-- Redirect to frontend on success
-- `400 Bad Request` when no OAuth code is present
-- `500 Internal Server Error` if GitHub sign-in fails
-
-### Top-level auth aliases
-
-The server also exposes these top-level endpoints:
-
-- `GET /me`
-- `POST /refresh-token`
-- `POST /revoke-token`
-
-These are aliases that call the same logic as their `/auth` equivalents.
+- `GET /me` — same authenticated profile handler as `GET /auth/me`
+- `POST /refresh-token` — same handler as `POST /auth/refresh`
+- `POST /revoke-token` — same handler as `POST /auth/revoke`
 
 ---
 
-## 3) Notes routes
+## 3. Notes routes
 
-Base route: `/notes`
-
-All `/notes` routes require a valid access token unless otherwise stated.
+All `/notes` endpoints require an access token.
 
 ### `GET /notes`
 
-Lists notes for the authenticated user.
+Lists notes belonging to the authenticated user. With no pagination parameters, the response remains a JSON array.
 
 **Query parameters**
-- `category`: filter by category
-- `search`: text search against title and content
-- `sort`: one of `oldest`, `az`, `za`; default is newest first
-- `id`: fetch a single note by numeric id
 
-**Example**
+- `category`: filter by category; `all` does not apply a category filter
+- `search`: case-insensitive substring search in title or content
+- `sort`: `oldest`, `az`, or `za`; defaults to newest first
+- `id`: return one of the authenticated user's notes by ID instead of a list
+- `page`: positive one-based page number; enables offset pagination
+- `limit`: positive page size up to `50`; enables offset pagination and defaults to `10` when only `page` is supplied
+
+Example:
 
 ```http
 GET /notes?category=work&search=meeting&sort=az
 ```
 
-**Success response**
+An unpaginated list is ordered newest first by default. If either `page` or `limit` is supplied, the response is offset-paginated and ordered by `createdAt` descending, then `id` descending; `sort` does not change this paginated order.
+
+**Unpaginated success response**
 
 ```json
 [
@@ -303,17 +222,73 @@ GET /notes?category=work&search=meeting&sort=az
 ]
 ```
 
-**Status codes**
-- `200 OK`
-- `400 Bad Request` if an invalid numeric `id` is supplied
-- `401 Unauthorized` when no valid token is provided
-- `404 Not Found` when the requested note does not belong to the authenticated user
+**Paginated request**
+
+```http
+GET /notes?page=1&limit=10
+```
+
+**Paginated success response**
+
+```json
+{
+  "items": [
+    {
+      "id": 1,
+      "title": "Project ideas",
+      "category": "work",
+      "content": "Talk about roadmap",
+      "userId": 42,
+      "isPin": false,
+      "createdAt": "2026-10-05T12:00:00.000Z",
+      "updatedAt": "2026-10-05T12:00:00.000Z"
+    }
+  ],
+  "total": 21,
+  "page": 1,
+  "limit": 10,
+  "totalPages": 3
+}
+```
+
+An out-of-range page succeeds with an empty `items` array. Invalid `page` or `limit` values, including non-positive values or a limit above 50, return `400 Bad Request`.
+
+When `id` is supplied, the response is the matching note object. Status codes: `200 OK`, `400 Bad Request` for a non-numeric `id` or invalid pagination values, `401 Unauthorized`, and `404 Not Found` if the requested note does not belong to the user.
+
+### `GET /notes/feed`
+
+Returns a cursor-paginated feed ordered by `createdAt` descending and then `id` descending. `limit` is optional, defaults to `10`, and must be from 1 to 50. Pass the returned `nextCursor` as the `cursor` parameter to fetch the next page:
+
+```http
+GET /notes/feed?limit=10
+GET /notes/feed?limit=10&cursor=eyJjcmVhdGVkQXQiOiIyMDI2LTEwLTA1VDEyOjAwOjAwLjAwMFoiLCJpZCI6MTJ9
+```
+
+Response:
+
+```json
+{
+  "items": [
+    {
+      "id": 12,
+      "title": "Project ideas",
+      "category": "work",
+      "content": "Talk about roadmap",
+      "userId": 42,
+      "isPin": false,
+      "createdAt": "2026-10-05T12:00:00.000Z",
+      "updatedAt": "2026-10-05T12:00:00.000Z"
+    }
+  ],
+  "nextCursor": "eyJjcmVhdGVkQXQiOiIyMDI2LTEwLTA1VDEyOjAwOjAwLjAwMFoiLCJpZCI6MTJ9"
+}
+```
+
+`nextCursor` is `null` when there is no further page. Invalid limits or cursor values return `400 Bad Request`; unauthenticated requests return `401 Unauthorized`.
 
 ### `POST /notes`
 
-Creates a note.
-
-**Request body**
+Creates a note for the authenticated user.
 
 ```json
 {
@@ -323,36 +298,11 @@ Creates a note.
 }
 ```
 
-**Validation**
-- `title` is required
-- `category` is required
-- `content` defaults to an empty string if omitted
+`title` and `category` are required. `content` defaults to an empty string when omitted or falsy. Returns the created note with `201 Created`; invalid required fields return `400 Bad Request`, and unauthenticated requests return `401 Unauthorized`.
 
-**Success response**
+### `PATCH /notes?id=12` and `PATCH /notes/:id`
 
-```json
-{
-  "id": 2,
-  "title": "Meeting notes",
-  "category": "work",
-  "content": "Discuss launch timeline",
-  "userId": 42,
-  "isPin": false,
-  "createdAt": "2026-10-05T12:00:00.000Z",
-  "updatedAt": "2026-10-05T12:00:00.000Z"
-}
-```
-
-**Status codes**
-- `201 Created`
-- `400 Bad Request` for invalid payload
-- `401 Unauthorized` when no valid token is provided
-
-### `PATCH /notes`
-
-Updates a note using the `id` query parameter.
-
-**Example**
+Updates the specified note owned by the authenticated user. The ID can be supplied as a query parameter or as a path parameter; the path parameter takes precedence. The number in the query example is illustrative.
 
 ```http
 PATCH /notes?id=2
@@ -366,156 +316,33 @@ PATCH /notes?id=2
 }
 ```
 
-**Success response**
+Returns the updated note with `200 OK`. Missing or non-numeric IDs return `400 Bad Request`; a note not owned by the user returns `404 Not Found`; unauthenticated requests return `401 Unauthorized`.
 
-```json
-{
-  "id": 2,
-  "title": "Updated meeting notes",
-  "category": "work",
-  "content": "Discuss launch sequence",
-  "userId": 42,
-  "isPin": false,
-  "createdAt": "2026-10-05T12:00:00.000Z",
-  "updatedAt": "2026-10-06T10:00:00.000Z"
-}
-```
+### `DELETE /notes?id=12` and `DELETE /notes/:id`
 
-**Status codes**
-- `200 OK`
-- `400 Bad Request` for missing or invalid `id`
-- `401 Unauthorized`
-- `404 Not Found`
-
-### `DELETE /notes`
-
-Deletes a note using the `id` query parameter.
-
-**Example**
+Deletes the specified note owned by the authenticated user. The path parameter takes precedence over the query parameter.
 
 ```http
 DELETE /notes?id=2
 ```
 
-**Success response**
-
-```json
-{
-  "success": true
-}
-```
-
-**Status codes**
-- `200 OK`
-- `400 Bad Request` for missing or invalid `id`
-- `401 Unauthorized`
-- `404 Not Found`
+Success response: `{"success":true}` with `200 OK`. Missing or non-numeric IDs return `400 Bad Request`; a note not owned by the user returns `404 Not Found`; unauthenticated requests return `401 Unauthorized`.
 
 ### `GET /notes/:id`
 
-Returns a single note for the authenticated user.
-
-**Example**
-
-```http
-GET /notes/12
-```
-
-**Success response**
-
-```json
-{
-  "id": 12,
-  "title": "Project notes",
-  "category": "personal",
-  "content": "Keep track of tasks",
-  "userId": 42,
-  "isPin": true,
-  "createdAt": "2026-10-05T12:00:00.000Z",
-  "updatedAt": "2026-10-05T12:00:00.000Z"
-}
-```
-
-**Status codes**
-- `200 OK`
-- `401 Unauthorized`
-- `404 Not Found`
-
-### `PATCH /notes/:id`
-
-Updates a note by path parameter instead of query string.
-
-**Request body**
-
-```json
-{
-  "title": "Updated title",
-  "content": "Updated content",
-  "category": "work"
-}
-```
-
-**Status codes**
-- `200 OK`
-- `401 Unauthorized`
-- `404 Not Found`
-
-### `DELETE /notes/:id`
-
-Deletes a note by path parameter.
-
-**Success response**
-
-```json
-{
-  "success": true
-}
-```
-
-**Status codes**
-- `200 OK`
-- `401 Unauthorized`
-- `404 Not Found`
+Returns one note owned by the authenticated user. Success returns the note object with `200 OK`; a note not found for that user returns `404 Not Found`; unauthenticated requests return `401 Unauthorized`.
 
 ### `PATCH /notes/:id/pin`
 
-Toggles the pinned state of a note.
-
-- Maximum pinned notes: `3`
-- If the user already has three pinned notes, the endpoint returns `409 Conflict`
-
-**Success response**
-
-```json
-{
-  "id": 12,
-  "title": "Pinned note",
-  "category": "work",
-  "content": "Important details",
-  "userId": 42,
-  "isPin": true,
-  "createdAt": "2026-10-05T12:00:00.000Z",
-  "updatedAt": "2026-10-06T10:00:00.000Z"
-}
-```
-
-**Status codes**
-- `200 OK`
-- `401 Unauthorized`
-- `404 Not Found`
-- `409 Conflict` when the pin limit is reached
+Toggles the note's `isPin` value. A user can have at most three pinned notes. Returns the updated note with `200 OK`; if pinning would exceed the limit, returns `409 Conflict`. A note not found for that user returns `404 Not Found`; unauthenticated requests return `401 Unauthorized`.
 
 ---
 
-## 4) Notes and implementation summary
+## 4. Data and route implementation
 
-The current project exposes these relevant routes and files:
+- `src/server.ts` registers health, auth aliases, CORS, JSON parsing, and error handling.
+- `src/routes/auth.routes.ts` and `src/routes/notes.routes.ts` register route handlers.
+- `src/controller/` contains auth, OAuth, and notes behavior, including the pagination helpers.
+- `prisma/schema.prisma` defines users, provider accounts, refresh tokens, and notes.
 
-- `src/server.ts`
-- `src/routes/auth.routes.ts`
-- `src/routes/notes.routes.ts`
-- `src/controller/auth.controller.ts`
-- `src/controller/notes.controller.ts`
-- `src/controller/oauth.controller.ts`
-
-This documentation reflects the live route registration and controller logic in the app, including the newer OAuth and top-level alias endpoints.
+The API serves JSON except for OAuth redirects. Error responses use an `error` field where the handler explicitly returns one.

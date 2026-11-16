@@ -3,7 +3,6 @@
   "1": "Authentication & Token Management",
   "2": "TypeScript Compiler Configuration",
   "3": "OAuth Services & Callbacks",
-  "5": "Notes CRUD & Pinning",
   "7": "Biome Linter & Formatter Config",
   "9": "NPM Scripts & Build Pipeline",
   "10": "Vercel Deployment Configuration",
