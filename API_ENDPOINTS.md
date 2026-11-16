@@ -11,9 +11,17 @@ This document describes the current backend API implemented by the project.
 Protected routes accept a JWT in either of these ways:
 
 - `Authorization: Bearer <access_token>`
-- HTTP-only cookies: `token`, `accessToken`, and `refreshToken`
+- HTTP-only access-token cookies: `token` or `accessToken`
 
-The server validates access tokens through the `requireAuth` middleware. Refresh tokens are stored in the database and can be rotated or revoked.
+The server validates access tokens through the `requireAuth` middleware. The `refreshToken` cookie is used by refresh, revoke, and logout operations; it is not an access token for protected routes. Refresh tokens are stored in the database and can be rotated or revoked.
+
+## Cross-origin requests
+
+- CORS requests are allowed from the configured `FRONTEND_URL` origins and the local development origins `http://localhost:3000`, `http://localhost:5173`, `http://127.0.0.1:3000`, and `http://127.0.0.1:5173`.
+- Credentialed requests are enabled.
+- Allowed methods: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, and `OPTIONS`.
+- Allowed headers: `Content-Type` and `Authorization`.
+- Valid preflight requests are handled for all paths.
 
 ---
 
@@ -136,7 +144,7 @@ Issues a new access token and rotates the refresh token.
 
 **Request**
 
-- No request body. Reads the previous `refreshToken` from the `refreshToken` HTTP-only cookie.
+- No request body. Reads the previous `refreshToken` from the `refreshToken` HTTP-only cookie. A token in the request body is not used.
 
 **Success response**
 
@@ -162,6 +170,8 @@ Revokes a refresh token so it cannot be used again.
 
 **Request**
 
+The refresh token may be provided in the `refreshToken` HTTP-only cookie or in the JSON body. If both are present, the cookie is used.
+
 ```json
 {
   "refreshToken": "jwt_refresh_token_to_revoke"
@@ -176,14 +186,24 @@ Revokes a refresh token so it cannot be used again.
 }
 ```
 
+The response also clears the auth cookies.
+
 **Status codes**
 - `200 OK`
-- `400 Bad Request` if no refresh token is provided
+- `400 Bad Request` if neither the cookie nor the request body provides a refresh token
 - `500 Internal Server Error` for unexpected errors
 
 ### `POST /auth/logout`
 
-Revokes the current refresh token if present and clears all auth cookies.
+Attempts to revoke the refresh token if provided in the `refreshToken` HTTP-only cookie or JSON body. If both are present, the cookie is used. Clears all auth cookies whether or not a refresh token is provided.
+
+**Optional request body**
+
+```json
+{
+  "refreshToken": "jwt_refresh_token_to_revoke"
+}
+```
 
 **Success response**
 
@@ -203,6 +223,7 @@ Redirects the user to the Google OAuth consent screen.
 **Behavior**
 - Requires `GOOGLE_CLIENT_ID` and `GOOGLE_CALLBACK_URL` to be configured.
 - Uses the `openid email profile` scope.
+- Returns `500 Internal Server Error` if the required OAuth configuration is missing.
 
 ### `GET /auth/google/callback`
 
@@ -220,6 +241,7 @@ Redirects the user to the GitHub OAuth login flow.
 **Behavior**
 - Requires `GITHUB_CLIENT_ID` and `GITHUB_CALLBACK_URL` to be configured.
 - Requests `read:user user:email` scope.
+- Returns `500 Internal Server Error` if the required OAuth configuration is missing.
 
 ### `GET /auth/github/callback`
 
